@@ -58,6 +58,9 @@ class HeartRiskPredictor:
 
             # Preprocess input data
             processed_data = self._preprocessor.transform(df_input)
+            
+            # Ensure data is float32 for TensorFlow model prediction
+            processed_data = processed_data.astype(np.float32)
 
             # Generate prediction probability
             probability = float(
