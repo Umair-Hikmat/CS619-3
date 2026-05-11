@@ -278,59 +278,48 @@ class StreamlitApp:
                                 st.session_state.editing_patient_id = None
                                 st.rerun()
 
-       def _render_add_patient(self):
+    def _render_add_patient(self):
         st.title("🩺 Cardiac Risk Analysis")
         existing_patients = self.db_manager.get_patients(st.session_state.user_id)
-    
         options = ["-- Register New Patient --"]
-    
+
         if not existing_patients.empty:
             options += (existing_patients["name"] + " | " + existing_patients["contact_no"]).tolist()
-    
+
         selection = st.selectbox("Select Patient", options)
-    
+
         with st.form("patient_form"):
             st.subheader("Patient Information")
-    
+
             is_new = False
             p_id = None
-    
-            # ================= NEW PATIENT =================
+
             if selection == "-- Register New Patient --":
                 c1, c2, c3 = st.columns(3)
-    
                 p_name = c1.text_input("Full Name")
                 p_age = c2.number_input("Age", min_value=1, max_value=120, value=30)
-    
-                # Contact: 92 + 10 digits
-                user_number = c3.text_input("Enter 10-digit number", max_chars=10)
-                p_contact = "92" + user_number
-    
+                p_contact = c3.text_input("Contact No")
                 is_new = True
-    
-            # ================= EXISTING PATIENT =================
             else:
                 selected_contact = selection.split(" | ")[-1]
-    
-                p_info = existing_patients[
-                    existing_patients["contact_no"] == selected_contact
-                ].iloc[0]
-    
-                # =================================================
-                # FIX: convert numpy/pandas types → Python types
-                # =================================================
+                p_info = existing_patients[existing_patients["contact_no"] == selected_contact].iloc[0]
+
+                # =========================================================
+                # FIX: convert numpy/pandas types → Python native types
+                # =========================================================
+                p_info = p_info.copy()
+                
                 p_id = int(p_info["id"])
                 p_name = str(p_info["name"])
                 p_age = int(p_info["age"])
                 p_contact = str(p_info["contact_no"])
-    
+                
                 st.info(f"{p_name} | Age: {p_age}")
-    
+
             st.write("---")
             st.subheader("Clinical Metrics")
-    
+
             col1, col2 = st.columns(2)
-    
             with col1:
                 gender = st.selectbox("Gender", list(GENDER_MAP.keys()))
                 chest_pain = st.selectbox("Chest Pain Type", list(CP_MAP.keys()))
@@ -338,7 +327,6 @@ class StreamlitApp:
                 chol = st.number_input("Cholesterol", min_value=50, max_value=700, value=200)
                 fbs = st.selectbox("Fasting Blood Sugar > 120", [0, 1])
                 restecg = st.selectbox("Rest ECG", list(RESTECG_MAP.keys()))
-    
             with col2:
                 mhr = st.number_input("Max Heart Rate", min_value=30, max_value=250, value=150)
                 eia = st.selectbox("Exercise Induced Angina", [0, 1])
@@ -346,12 +334,11 @@ class StreamlitApp:
                 slope = st.selectbox("ST Slope", list(SLOPE_MAP.keys()))
                 vessels = st.number_input("Major Vessels", min_value=0, max_value=4, value=0)
                 thal = st.selectbox("Thalassemia", list(THAL_MAP.keys()))
-    
+
             submitted = st.form_submit_button("Run Analysis")
-    
+
             if submitted:
                 valid, msg = self._validate_patient(p_name, p_contact)
-    
                 if not valid:
                     st.error(msg)
                 else:
@@ -370,19 +357,14 @@ class StreamlitApp:
                         "MajorVessels": int(vessels),
                         "Thalassemia": int(THAL_MAP[thal])
                     }
-    
+
                     with st.spinner("Analyzing cardiac risk..."):
                         try:
                             target, prob, category, status = self.predictor.predict_heart_risk(input_data)
-    
+
                             if status == "Success":
-    
-                                # ================= PATIENT ID HANDLING =================
                                 if is_new:
-                                    existing = existing_patients[
-                                        existing_patients["contact_no"] == p_contact
-                                    ]
-    
+                                    existing = existing_patients[existing_patients["contact_no"] == p_contact]
                                     if existing.empty:
                                         p_id = self.db_manager.create_patient(
                                             st.session_state.user_id,
@@ -391,38 +373,29 @@ class StreamlitApp:
                                             p_age
                                         )
                                     else:
-                                        p_id = int(existing.iloc[0]["id"])
-    
-                                # ================= SAVE RECORD =================
-                                self.db_manager.create_medical_record(
-                                    p_id,
-                                    input_data,
-                                    target,
-                                    prob
-                                )
-    
-                                st.success("Medical record saved successfully ✔")
-    
+                                        p_id = existing.iloc[0]["id"]
+
+                                self.db_manager.create_medical_record(p_id, input_data, target, prob)
+
                                 latest_record = self.db_manager.get_records(p_id)
+                                st.success("Medical record saved successfully ✔")
+                                st.write("🔎 Latest DB Record:")
                                 st.dataframe(latest_record.head(1))
-    
+
                                 st.success(
                                     f"""
                                     Analysis Complete
-    
+
                                     Risk Category: {category}
                                     Probability: {prob * 100:.1f}%
                                     """
                                 )
-    
                                 st.progress(min(prob, 1.0))
-    
                             else:
                                 st.error(status)
-    
                         except Exception as e:
                             st.error(f"Prediction Error: {e}")
-                        
+
     def _render_medical_records(self):
         st.title("📋 Medical Records")
         all_records = []
