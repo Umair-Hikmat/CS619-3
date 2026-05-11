@@ -106,7 +106,13 @@ class StreamlitApp:
         if not name.strip():
             return False, "Patient name required"
         if not contact.strip():
-            return False, "Contact required"
+            return False, "Contact number required."
+        if not contact.startswith('92'):
+            return False, "Contact number must start with '92'."
+        if not contact.isdigit():
+            return False, "Contact number must contain only digits."
+        if len(contact) != 10:
+            return False, "Contact number must be exactly 10 digits long (e.g., 92XXXXXXXX)."
         return True, "Success"
 
     def run(self):
@@ -308,12 +314,12 @@ class StreamlitApp:
                 # FIX: convert numpy/pandas types → Python native types
                 # =========================================================
                 p_info = p_info.copy()
-                
+
                 p_id = int(p_info["id"])
                 p_name = str(p_info["name"])
                 p_age = int(p_info["age"])
                 p_contact = str(p_info["contact_no"])
-                
+
                 st.info(f"{p_name} | Age: {p_age}")
 
             st.write("---")
@@ -454,20 +460,20 @@ class StreamlitApp:
                             col1, col2 = st.columns(2)
                             with col1:
                                 edit_age = st.number_input("Age", value=int(rec["Age"]), min_value=1, max_value=120)
-                                edit_gender = st.selectbox("Gender", list(GENDER_MAP.keys()), index=int(rec["Gender"])) 
-                                edit_cp = st.selectbox("Chest Pain Type", list(CP_MAP.keys()), index=int(rec["ChestPainType"])) 
-                                edit_rbp = st.number_input("Resting Blood Pressure", min_value=50, max_value=300, value=int(rec["RestingBloodPressure"])) 
-                                edit_chol = st.number_input("Cholesterol", min_value=50, max_value=700, value=int(rec["Cholesterol"])) 
-                                edit_fbs = st.selectbox("Fasting Blood Sugar > 120", [0, 1], index=int(rec["FastingBloodSugar"])) 
-                                edit_restecg = st.selectbox("Rest ECG", list(RESTECG_MAP.keys()), index=int(rec["RestECG"])) 
+                                edit_gender = st.selectbox("Gender", list(GENDER_MAP.keys()), index=int(rec["Gender"]))
+                                edit_cp = st.selectbox("Chest Pain Type", list(CP_MAP.keys()), index=int(rec["ChestPainType"]))
+                                edit_rbp = st.number_input("Resting Blood Pressure", min_value=50, max_value=300, value=int(rec["RestingBloodPressure"]))
+                                edit_chol = st.number_input("Cholesterol", min_value=50, max_value=700, value=int(rec["Cholesterol"]))
+                                edit_fbs = st.selectbox("Fasting Blood Sugar > 120", [0, 1], index=int(rec["FastingBloodSugar"]))
+                                edit_restecg = st.selectbox("Rest ECG", list(RESTECG_MAP.keys()), index=int(rec["RestECG"]))
 
                             with col2:
-                                edit_mhr = st.number_input("Max Heart Rate", min_value=30, max_value=250, value=int(rec["MaxHeartRate"])) 
-                                edit_eia = st.selectbox("Exercise Induced Angina", [0, 1], index=int(rec["ExerciseInducedAngina"])) 
-                                edit_st_dep = st.number_input("ST Depression", value=float(rec["ST_Depression"])) 
-                                edit_slope = st.selectbox("ST Slope", list(SLOPE_MAP.keys()), index=int(rec["ST_Slope"])) 
-                                edit_vessels = st.number_input("Major Vessels", min_value=0, max_value=4, value=int(rec["MajorVessels"])) 
-                                thal_index = max(int(rec["Thalassemia"]) - 1, 0) 
+                                edit_mhr = st.number_input("Max Heart Rate", min_value=30, max_value=250, value=int(rec["MaxHeartRate"]))
+                                edit_eia = st.selectbox("Exercise Induced Angina", [0, 1], index=int(rec["ExerciseInducedAngina"]))
+                                edit_st_dep = st.number_input("ST Depression", value=float(rec["ST_Depression"]))
+                                edit_slope = st.selectbox("ST Slope", list(SLOPE_MAP.keys()), index=int(rec["ST_Slope"]))
+                                edit_vessels = st.number_input("Major Vessels", min_value=0, max_value=4, value=int(rec["MajorVessels"]))
+                                thal_index = max(int(rec["Thalassemia"]) - 1, 0)
                                 edit_thal = st.selectbox("Thalassemia", list(THAL_MAP.keys()), index=thal_index)
 
                             c1, c2 = st.columns(2)
