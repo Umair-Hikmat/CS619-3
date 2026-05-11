@@ -106,7 +106,13 @@ class StreamlitApp:
         if not name.strip():
             return False, "Patient name required"
         if not contact.strip():
-            return False, "Contact required"
+            return False, "Contact number required."
+        if not contact.startswith('92'):
+            return False, "Contact number must start with '92'."
+        if not contact.isdigit():
+            return False, "Contact number must contain only digits."
+        if len(contact) != 10:
+            return False, "Contact number must be exactly 10 digits long (e.g., 92XXXXXXXX).
         return True, "Success"
 
     def run(self):
@@ -308,12 +314,12 @@ class StreamlitApp:
                 # FIX: convert numpy/pandas types → Python native types
                 # =========================================================
                 p_info = p_info.copy()
-                
+
                 p_id = int(p_info["id"])
                 p_name = str(p_info["name"])
                 p_age = int(p_info["age"])
                 p_contact = str(p_info["contact_no"])
-                
+
                 st.info(f"{p_name} | Age: {p_age}")
 
             st.write("---")
