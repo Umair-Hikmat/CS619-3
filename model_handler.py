@@ -71,7 +71,7 @@ class HeartRiskPredictor:
             )
 
             # Convert to percentage
-            percentage = round(probability * 100, 2)
+            percentage = round(probability, 4)
 
             # Apply threshold
             target = 1 if probability >= threshold else 0
