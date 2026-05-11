@@ -112,7 +112,7 @@ class StreamlitApp:
         if not contact.isdigit():
             return False, "Contact number must contain only digits."
         if len(contact) != 10:
-            return False, "Contact number must be exactly 10 digits long (e.g., 92XXXXXXXX).
+            return False, "Contact number must be exactly 10 digits long (e.g., 92XXXXXXXX)".
         return True, "Success"
 
     def run(self):
