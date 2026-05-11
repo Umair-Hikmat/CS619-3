@@ -303,11 +303,18 @@ class StreamlitApp:
             else:
                 selected_contact = selection.split(" | ")[-1]
                 p_info = existing_patients[existing_patients["contact_no"] == selected_contact].iloc[0]
-                st.info(f"{p_info['name']} | Age: {p_info['age']}")
-                p_name = p_info["name"]
-                p_age = p_info["age"]
-                p_contact = p_info["contact_no"]
-                p_id = p_info["id"]
+
+                # =========================================================
+                # FIX: convert numpy/pandas types → Python native types
+                # =========================================================
+                p_info = p_info.copy()
+                
+                p_id = int(p_info["id"])
+                p_name = str(p_info["name"])
+                p_age = int(p_info["age"])
+                p_contact = str(p_info["contact_no"])
+                
+                st.info(f"{p_name} | Age: {p_age}")
 
             st.write("---")
             st.subheader("Clinical Metrics")
@@ -336,19 +343,19 @@ class StreamlitApp:
                     st.error(msg)
                 else:
                     input_data = {
-                        "Age": p_age,
-                        "Gender": GENDER_MAP[gender],
-                        "ChestPainType": CP_MAP[chest_pain],
-                        "RestingBloodPressure": rbp,
-                        "Cholesterol": chol,
-                        "FastingBloodSugar": fbs,
-                        "RestECG": RESTECG_MAP[restecg],
-                        "MaxHeartRate": mhr,
-                        "ExerciseInducedAngina": eia,
-                        "ST_Depression": st_dep,
-                        "ST_Slope": SLOPE_MAP[slope],
-                        "MajorVessels": vessels,
-                        "Thalassemia": THAL_MAP[thal]
+                        "Age": int(p_age),
+                        "Gender": int(GENDER_MAP[gender]),
+                        "ChestPainType": int(CP_MAP[chest_pain]),
+                        "RestingBloodPressure": int(rbp),
+                        "Cholesterol": int(chol),
+                        "FastingBloodSugar": int(fbs),
+                        "RestECG": int(RESTECG_MAP[restecg]),
+                        "MaxHeartRate": int(mhr),
+                        "ExerciseInducedAngina": int(eia),
+                        "ST_Depression": float(st_dep),
+                        "ST_Slope": int(SLOPE_MAP[slope]),
+                        "MajorVessels": int(vessels),
+                        "Thalassemia": int(THAL_MAP[thal])
                     }
 
                     with st.spinner("Analyzing cardiac risk..."):
