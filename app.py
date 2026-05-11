@@ -9,6 +9,8 @@ import model_handler as mh
 import pandas as pd
 from datetime import datetime
 import pytz
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # =========================================================
 # PAGE CONFIG
@@ -148,16 +150,19 @@ class StreamlitApp:
             self._render_medical_records()
         elif menu == "Profile":
             self._render_profile()
+        elif menu == "Risk Trends":
+            self._render_risk_trends()
 
     def _render_sidebar(self):
         st.sidebar.title(f"👨‍⚕️ Dr. {st.session_state.user_name}")
         menu_selection = st.sidebar.radio(
-            "Menu",
+            "Navigation",
             [
                 "Dashboard",
                 "Patients",
                 "Add Patient",
                 "Medical Records",
+                "Risk Trends",
                 "Profile",
                 "Logout"
             ]
@@ -561,6 +566,69 @@ class StreamlitApp:
                         st.rerun()
         else:
             st.error("Doctor information not found.")
+
+    def _render_risk_trends(self):
+        st.title("📈 Health Risk Trends")
+        all_records = []
+        patients_df = self.db_manager.get_patients(st.session_state.user_id)
+
+        for _, patient in patients_df.iterrows():
+            recs = self.db_manager.get_records(patient["id"])
+            if not recs.empty:
+                recs = recs.copy()
+                recs["Patient"] = patient["name"]
+                recs["Contact"] = patient["contact_no"]
+                all_records.append(recs)
+
+        if not all_records:
+            st.info("No medical records available to analyze trends.")
+            return
+
+        df_trends = pd.concat(all_records, ignore_index=True)
+        df_trends['visit_date'] = pd.to_datetime(df_trends['visit_date'])
+        df_trends['Risk Category'] = df_trends['Probability'].apply(self._calculate_risk_status)
+
+        st.subheader("Risk Category Distribution")
+        risk_counts = df_trends['Risk Category'].value_counts().reset_index()
+        risk_counts.columns = ['Risk Category', 'Count']
+        fig_pie, ax_pie = plt.subplots()
+        ax_pie.pie(risk_counts['Count'], labels=risk_counts['Risk Category'], autopct='%1.1f%%', startangle=90, wedgeprops={'edgecolor': 'black'})
+        ax_pie.axis('equal') # Equal aspect ratio ensures that pie is drawn as a circle.
+        st.pyplot(fig_pie)
+
+        st.subheader("Average Risk Probability Over Time")
+        # Group by date and calculate average probability
+        daily_avg_risk = df_trends.groupby(df_trends['visit_date'].dt.date)['Probability'].mean().reset_index()
+        daily_avg_risk.columns = ['Date', 'Average Probability']
+        
+        if not daily_avg_risk.empty:
+            fig_line, ax_line = plt.subplots(figsize=(10, 5))
+            sns.lineplot(x='Date', y='Average Probability', data=daily_avg_risk, marker='o', ax=ax_line)
+            ax_line.set_title('Average Heart Disease Risk Over Time')
+            ax_line.set_xlabel('Date')
+            ax_line.set_ylabel('Average Probability')
+            ax_line.tick_params(axis='x', rotation=45)
+            st.pyplot(fig_line)
+        else:
+            st.info("No sufficient data to show average risk over time.")
+
+        st.subheader("Risk Distribution by Age Group")
+        # Define age groups
+        bins = [0, 18, 30, 45, 60, 75, 100]
+        labels = ['<18', '18-29', '30-44', '45-59', '60-74', '75+']
+        df_trends['Age Group'] = pd.cut(df_trends['Age'], bins=bins, labels=labels, right=False)
+        
+        age_risk = df_trends.groupby('Age Group')['Probability'].mean().reset_index()
+        if not age_risk.empty: 
+            fig_bar, ax_bar = plt.subplots(figsize=(10, 5))
+            sns.barplot(x='Age Group', y='Probability', data=age_risk, palette='viridis', ax=ax_bar)
+            ax_bar.set_title('Average Heart Disease Risk by Age Group')
+            ax_bar.set_xlabel('Age Group')
+            ax_bar.set_ylabel('Average Probability')
+            st.pyplot(fig_bar)
+        else:
+            st.info("No sufficient data to show risk distribution by age group.")
+
 
 if __name__ == "__main__":
     predictor_instance = mh.HeartRiskPredictor()
