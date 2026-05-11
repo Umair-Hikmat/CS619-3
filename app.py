@@ -105,19 +105,8 @@ class StreamlitApp:
     def _validate_patient(self, name, contact):
         if not name.strip():
             return False, "Patient name required"
-    
         if not contact.strip():
             return False, "Contact required"
-    
-        if not contact.isdigit():
-            return False, "Contact must contain numbers only"
-    
-        if not contact.startswith("92"):
-            return False, "Contact must start with 92"
-    
-        if len(contact) != 12:
-            return False, "Contact number must be exactly 12 digits (92XXXXXXXXXX)"
-    
         return True, "Success"
 
     def run(self):
@@ -319,12 +308,12 @@ class StreamlitApp:
                 # FIX: convert numpy/pandas types → Python native types
                 # =========================================================
                 p_info = p_info.copy()
-
+                
                 p_id = int(p_info["id"])
                 p_name = str(p_info["name"])
                 p_age = int(p_info["age"])
                 p_contact = str(p_info["contact_no"])
-
+                
                 st.info(f"{p_name} | Age: {p_age}")
 
             st.write("---")
