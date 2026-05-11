@@ -112,7 +112,7 @@ class StreamlitApp:
         if not contact.isdigit():
             return False, "Contact number must contain only digits."
         if len(contact) != 12:
-            return False, "Contact number must be exactly 10 digits long (e.g., 92XXXXXXXX)."
+            return False, "Contact number must be exactly 12 digits long (e.g., 923XXXXXXXXX)."
         return True, "Success"
 
     def run(self):
@@ -143,6 +143,8 @@ class StreamlitApp:
             self._render_add_patient()
         elif menu == "Medical Records":
             self._render_medical_records()
+        elif menu == "Profile":
+            self._render_profile()
 
     def _render_sidebar(self):
         st.sidebar.title(f"👨‍⚕️ Dr. {st.session_state.user_name}")
@@ -153,6 +155,7 @@ class StreamlitApp:
                 "Patients",
                 "Add Patient",
                 "Medical Records",
+                "Profile",
                 "Logout"
             ]
         )
@@ -515,6 +518,38 @@ class StreamlitApp:
                                     st.rerun()
         else:
             st.info("No medical records found.")
+
+    def _render_profile(self):
+        st.title("👨‍⚕️ Doctor Profile")
+        doctor_df = self.db_manager.get_doctors(st.session_state.user_id)
+
+        if not doctor_df.empty:
+            doctor_info = doctor_df.iloc[0]
+            with st.form("doctor_profile_form"):
+                st.subheader("Personal Information")
+                col1, col2 = st.columns(2)
+                with col1:
+                    edit_first_name = st.text_input("First Name", value=doctor_info["first_name"])
+                    edit_contact = st.text_input("Contact No", value=doctor_info["contact_no"])
+                with col2:
+                    edit_last_name = st.text_input("Last Name", value=doctor_info["last_name"])
+                    edit_qualification = st.text_input("Qualification (MBBS/MD)", value=doctor_info["qualification"])
+                
+                st.text_input("Email", value=doctor_info["email"], disabled=True)
+
+                if st.form_submit_button("Update Profile"):
+                    self.db_manager.update_doctor(
+                        st.session_state.user_id,
+                        edit_first_name,
+                        edit_last_name,
+                        edit_contact,
+                        edit_qualification
+                    )
+                    st.success("Profile updated successfully!")
+                    st.session_state.user_name = f"{edit_first_name} {edit_last_name}"
+                    st.rerun()
+        else:
+            st.error("Doctor information not found.")
 
 if __name__ == "__main__":
     predictor_instance = mh.HeartRiskPredictor()
