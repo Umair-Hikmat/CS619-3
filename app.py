@@ -102,9 +102,7 @@ class StreamlitApp:
             return "🟠 High Risk"
         return "🔴 Critical Risk"
 
-    def _validate_patient(self, name, contact):
-        if not name.strip():
-            return False, "Patient name required"
+    def _validate_contact_number(self, contact):
         if not contact.strip():
             return False, "Contact number required."
         if not contact.startswith('92'):
@@ -114,6 +112,11 @@ class StreamlitApp:
         if len(contact) != 12:
             return False, "Contact number must be exactly 12 digits long (e.g., 923XXXXXXXXX)."
         return True, "Success"
+
+    def _validate_patient(self, name, contact):
+        if not name.strip():
+            return False, "Patient name required"
+        return self._validate_contact_number(contact)
 
     def run(self):
         if not st.session_state.logged_in:
@@ -273,15 +276,19 @@ class StreamlitApp:
                         col1, col2 = st.columns(2)
                         with col1:
                             if st.form_submit_button("Update"):
-                                self.db_manager.update_patient(
-                                    st.session_state.editing_patient_id,
-                                    edit_name,
-                                    edit_contact,
-                                    edit_age
-                                )
-                                st.success("Patient updated")
-                                st.session_state.editing_patient_id = None
-                                st.rerun()
+                                valid, msg = self._validate_patient(edit_name, edit_contact)
+                                if not valid:
+                                    st.error(msg)
+                                else:
+                                    self.db_manager.update_patient(
+                                        st.session_state.editing_patient_id,
+                                        edit_name,
+                                        edit_contact,
+                                        edit_age
+                                    )
+                                    st.success("Patient updated")
+                                    st.session_state.editing_patient_id = None
+                                    st.rerun()
                         with col2:
                             if st.form_submit_button("Cancel"):
                                 st.session_state.editing_patient_id = None
@@ -538,16 +545,20 @@ class StreamlitApp:
                 st.text_input("Email", value=doctor_info["email"], disabled=True)
 
                 if st.form_submit_button("Update Profile"):
-                    self.db_manager.update_doctor(
-                        st.session_state.user_id,
-                        edit_first_name,
-                        edit_last_name,
-                        edit_contact,
-                        edit_qualification
-                    )
-                    st.success("Profile updated successfully!")
-                    st.session_state.user_name = f"{edit_first_name} {edit_last_name}"
-                    st.rerun()
+                    valid, msg = self._validate_contact_number(edit_contact)
+                    if not valid:
+                        st.error(msg)
+                    else:
+                        self.db_manager.update_doctor(
+                            st.session_state.user_id,
+                            edit_first_name,
+                            edit_last_name,
+                            edit_contact,
+                            edit_qualification
+                        )
+                        st.success("Profile updated successfully!")
+                        st.session_state.user_name = f"{edit_first_name} {edit_last_name}"
+                        st.rerun()
         else:
             st.error("Doctor information not found.")
 
