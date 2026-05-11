@@ -111,7 +111,7 @@ class StreamlitApp:
             return False, "Contact number must start with '92'."
         if not contact.isdigit():
             return False, "Contact number must contain only digits."
-        if len(contact) != 10:
+        if len(contact) != 12:
             return False, "Contact number must be exactly 10 digits long (e.g., 92XXXXXXXX)."
         return True, "Success"
 
