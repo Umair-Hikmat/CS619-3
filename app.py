@@ -105,14 +105,19 @@ class StreamlitApp:
     def _validate_patient(self, name, contact):
         if not name.strip():
             return False, "Patient name required"
+    
         if not contact.strip():
-            return False, "Contact number required."
-        if not contact.startswith('92'):
-            return False, "Contact number must start with '92'."
+            return False, "Contact required"
+    
         if not contact.isdigit():
-            return False, "Contact number must contain only digits."
-        if len(contact) != 10:
-            return False, "Contact number must be exactly 10 digits long (e.g., 92XXXXXXXX)".
+            return False, "Contact must contain numbers only"
+    
+        if not contact.startswith("92"):
+            return False, "Contact must start with 92"
+    
+        if len(contact) != 12:
+            return False, "Contact number must be exactly 12 digits (92XXXXXXXXXX)"
+    
         return True, "Success"
 
     def run(self):
