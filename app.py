@@ -128,7 +128,7 @@ class StreamlitApp:
         if menu == "Logout":
             st.session_state.logged_in = False
             st.session_state.auth_mode = "login"
-            st.experimental_rerun()
+            st.rerun()
         elif menu == "Dashboard":
             self._render_dashboard()
         elif menu == "Patients":
@@ -246,7 +246,7 @@ class StreamlitApp:
                 if st.button("🗑 Delete Patient"):
                     self.db_manager.delete_patient(selected_patient)
                     st.success("Patient deleted successfully")
-                    st.experimental_rerun()
+                    st.rerun()
 
         if st.session_state.editing_patient_id is not None:
             patient_df = self.db_manager.get_patients(
@@ -272,11 +272,11 @@ class StreamlitApp:
                                 )
                                 st.success("Patient updated")
                                 st.session_state.editing_patient_id = None
-                                st.experimental_rerun()
+                                st.rerun()
                         with col2:
                             if st.form_submit_button("Cancel"):
                                 st.session_state.editing_patient_id = None
-                                st.experimental_rerun()
+                                st.rerun()
 
     def _render_add_patient(self):
         st.title("🩺 Cardiac Risk Analysis")
@@ -426,7 +426,7 @@ class StreamlitApp:
                 if st.button("🗑 Delete Record"):
                     self.db_manager.delete_medical_record(selected_record)
                     st.success("Medical record deleted")
-                    st.experimental_rerun()
+                    st.rerun()
 
             if st.session_state.editing_record_id is not None:
                 original_record_df = None
@@ -492,14 +492,14 @@ class StreamlitApp:
                                         )
                                         st.success("Medical record updated successfully")
                                         st.session_state.editing_record_id = None
-                                        st.experimental_rerun()
+                                        st.rerun()
                                     except Exception as e:
                                         st.error(f"Update Error: {e}")
 
                             with c2:
                                 if st.form_submit_button("Cancel"):
                                     st.session_state.editing_record_id = None
-                                    st.experimental_rerun()
+                                    st.rerun()
         else:
             st.info("No medical records found.")
 
