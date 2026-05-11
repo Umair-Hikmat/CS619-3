@@ -156,7 +156,7 @@ class StreamlitApp:
     def _render_sidebar(self):
         st.sidebar.title(f"👨‍⚕️ Dr. {st.session_state.user_name}")
         menu_selection = st.sidebar.radio(
-            "Navigation",
+            "Menu",
             [
                 "Dashboard",
                 "Patients",
