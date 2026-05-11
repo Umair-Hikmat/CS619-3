@@ -54,7 +54,13 @@ class HeartRiskPredictor:
 
         try:
             # Convert input into DataFrame
-            df_input = pd.DataFrame([input_data])
+            # Convert input into DataFrame (SAFE FIX)
+            clean_input = {
+                k: (v.item() if hasattr(v, "item") else v)
+                for k, v in input_data.items()
+            }
+
+            df_input = pd.DataFrame([clean_input])
 
             # Preprocess input data
             processed_data = self._preprocessor.transform(df_input)
