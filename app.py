@@ -156,7 +156,7 @@ class StreamlitApp:
     def _render_sidebar(self):
         st.sidebar.title(f"👨‍⚕️ Dr. {st.session_state.user_name}")
         menu_selection = st.sidebar.radio(
-            "Menu",
+            "Navigation",
             [
                 "Dashboard",
                 "Patients",
@@ -172,6 +172,7 @@ class StreamlitApp:
     def _render_dashboard(self):
         st.title("📈 Clinical Dashboard")
         patients_df = self.db_manager.get_patients(st.session_state.user_id)
+        total_patients = len(patients_df) # Re-added this line
         all_probs = []
 
         if not patients_df.empty:
