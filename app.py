@@ -172,7 +172,6 @@ class StreamlitApp:
     def _render_dashboard(self):
         st.title("📈 Clinical Dashboard")
         patients_df = self.db_manager.get_patients(st.session_state.user_id)
-        total_patients = len(patients_df)
         all_probs = []
 
         if not patients_df.empty:
@@ -198,10 +197,22 @@ class StreamlitApp:
         st.subheader("📊 Risk Distribution")
 
         if all_probs:
-            risk_df = pd.DataFrame({
-                "Risk Probability": [x * 100 for x in all_probs]
-            })
-            st.bar_chart(risk_df)
+            risk_categories = [self._calculate_risk_status(prob) for prob in all_probs]
+            risk_counts = pd.Series(risk_categories).value_counts()
+            
+            # Define a custom order for risk categories
+            category_order = ["🟢 Low Risk", "🟡 Moderate Risk", "🟠 High Risk", "🔴 Critical Risk"]
+            risk_counts = risk_counts.reindex(category_order, fill_value=0)
+            
+            fig, ax = plt.subplots()
+            ax.bar(risk_counts.index, risk_counts.values, color=['green', 'gold', 'orange', 'red'])
+            ax.set_xlabel('Risk Category')
+            ax.set_ylabel('Number of Patients')
+            ax.set_title('Patient Risk Distribution')
+            st.pyplot(fig)
+        else:
+            st.info("No patient data to display risk distribution.")
+
         st.caption(f"Last Updated (PKT): {pkt_now}")
 
     def _render_patients(self):
@@ -546,7 +557,7 @@ class StreamlitApp:
                 with col2:
                     edit_last_name = st.text_input("Last Name", value=doctor_info["last_name"])
                     edit_qualification = st.text_input("Qualification (MBBS/MD)", value=doctor_info["qualification"])
-                
+
                 st.text_input("Email", value=doctor_info["email"], disabled=True)
 
                 if st.form_submit_button("Update Profile"):
@@ -600,7 +611,7 @@ class StreamlitApp:
         # Group by date and calculate average probability
         daily_avg_risk = df_trends.groupby(df_trends['visit_date'].dt.date)['Probability'].mean().reset_index()
         daily_avg_risk.columns = ['Date', 'Average Probability']
-        
+
         if not daily_avg_risk.empty:
             fig_line, ax_line = plt.subplots(figsize=(10, 5))
             sns.lineplot(x='Date', y='Average Probability', data=daily_avg_risk, marker='o', ax=ax_line)
@@ -608,6 +619,7 @@ class StreamlitApp:
             ax_line.set_xlabel('Date')
             ax_line.set_ylabel('Average Probability')
             ax_line.tick_params(axis='x', rotation=45)
+            plt.tight_layout() # Adjust layout to prevent labels from being cut off
             st.pyplot(fig_line)
         else:
             st.info("No sufficient data to show average risk over time.")
@@ -617,9 +629,9 @@ class StreamlitApp:
         bins = [0, 18, 30, 45, 60, 75, 100]
         labels = ['<18', '18-29', '30-44', '45-59', '60-74', '75+']
         df_trends['Age Group'] = pd.cut(df_trends['Age'], bins=bins, labels=labels, right=False)
-        
+
         age_risk = df_trends.groupby('Age Group')['Probability'].mean().reset_index()
-        if not age_risk.empty: 
+        if not age_risk.empty:
             fig_bar, ax_bar = plt.subplots(figsize=(10, 5))
             sns.barplot(x='Age Group', y='Probability', data=age_risk, palette='viridis', ax=ax_bar)
             ax_bar.set_title('Average Heart Disease Risk by Age Group')
