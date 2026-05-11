@@ -8,3 +8,5 @@ streamlit
 pytz
 dill
 importlib
+matplotlib
+seaborn
