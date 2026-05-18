@@ -7,12 +7,12 @@ class DatabaseManager:
         'host': 'sql12.freesqldatabase.com',
         'database': 'sql12826318',
         'user': 'sql12826318',
-        'password': 'yX4b1LddIG', # Replace with the password from your email
+        'password': 'yX4b1LddIG',
         'port': 3306
     }
 
     def __init__(self):
-        pass # DB_CONFIG is a class attribute, no instance-specific setup needed here
+        pass 
 
     def _get_connection(self):
         """Returns a connection object to the MySQL cloud database."""
@@ -73,7 +73,7 @@ class DatabaseManager:
                 conn.commit()
                 return True
         except Error as e:
-            print(f"Error creating doctor: {e}") # Print error for debugging
+            print(f"Error creating doctor: {e}")
             return False
 
     def get_doctors(self, doc_ids=None):
@@ -128,7 +128,6 @@ class DatabaseManager:
     def delete_patient(self, p_id):
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            # Delete dependent records first to avoid foreign key errors
             cursor.execute("DELETE FROM records WHERE patient_id=%s", (p_id,))
             cursor.execute("DELETE FROM patients WHERE id=%s", (p_id,))
             conn.commit()
