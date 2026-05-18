@@ -1,49 +1,22 @@
-# ==========================================
-# MYSQL VERSION (OLD CLOUD DATABASE)
-# ==========================================
-
-# import mysql.connector
-# import pandas as pd
-# from mysql.connector import Error
-
-# class DatabaseManager:
-#     DB_CONFIG = {
-#         'host': 'sql12.freesqldatabase.com',
-#         'database': 'sql12826318',
-#         'user': 'sql12826318',
-#         'password': 'yX4b1LddIG',
-#         'port': 3306
-#     }
-
-#     def __init__(self):
-#         pass
-
-#     def _get_connection(self):
-#         return mysql.connector.connect(**self.DB_CONFIG)
-
-
-# ==========================================
-# SQLITE VERSION (NEW LOCAL DATABASE)
-# ==========================================
-
-import sqlite3
+import mysql.connector
 import pandas as pd
-
+from mysql.connector import Error
 
 class DatabaseManager:
-
-    # ==========================================
-    # SQLITE DATABASE FILE
-    # ==========================================
-
-    DB_NAME = "heart_disease.db"
+    DB_CONFIG = {
+        'host': 'sql12.freesqldatabase.com',
+        'database': 'sql12826318',
+        'user': 'sql12826318',
+        'password': 'yX4b1LddIG', # Replace with the password from your email
+        'port': 3306
+    }
 
     def __init__(self):
-        pass
+        pass # DB_CONFIG is a class attribute, no instance-specific setup needed here
 
     def _get_connection(self):
-        """Returns SQLite database connection."""
-        return sqlite3.connect(self.DB_NAME)
+        """Returns a connection object to the MySQL cloud database."""
+        return mysql.connector.connect(**self.DB_CONFIG)
 
     def init_db(self):
         """Initializes the cloud database with MySQL schema."""
@@ -202,4 +175,4 @@ class DatabaseManager:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM records WHERE id=%s", (record_id,))
-            conn.commit()
+            conn.commit() account experied make it with sqlite
