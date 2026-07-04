@@ -414,7 +414,13 @@ class StreamlitApp:
                                 latest_record = self.db_manager.get_records(p_id)
                                 st.success("Medical record saved successfully ✔")
                                 st.write("🔎 Latest DB Record:")
-                                st.dataframe(latest_record.head(1))
+                                # Format Probability for display in DataFrame
+                                if not latest_record.empty:
+                                    latest_record_display = latest_record.head(1).copy()
+                                    latest_record_display['Probability'] = latest_record_display['Probability'].apply(lambda x: f"{x * 100:.1f}%")
+                                    st.dataframe(latest_record_display)
+                                else:
+                                    st.info("No record to display.")
 
                                 st.success(
                                     f"""
