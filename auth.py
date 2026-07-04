@@ -1,4 +1,3 @@
-%%writefile auth.py
 import streamlit as st
 import database_helper as db
 import re
