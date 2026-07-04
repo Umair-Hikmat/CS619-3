@@ -1,6 +1,8 @@
+%%writefile auth.py
 import streamlit as st
 import database_helper as db
 import re
+from datetime import date # Import date for min_value and max_value
 
 class AuthenticationService:
     def __init__(self, db_manager: db.DatabaseManager):
@@ -81,7 +83,12 @@ class AuthenticationService:
                     st.error(st.session_state.signup_contact_error)
                 qual = st.text_input("Qualification (MBBS/MD)")
 
-            dob = st.date_input("Date of Birth")
+            # Set a wider range for Date of Birth input
+            dob = st.date_input(
+                "Date of Birth",
+                min_value=date(1900, 1, 1),  # Allow selecting dates from 1900
+                max_value=date.today()      # Up to today's date
+            )
 
             submit = st.form_submit_button("Complete Registration")
 
@@ -103,12 +110,12 @@ class AuthenticationService:
                 # Check for other mandatory fields (if individual validations pass or set their own errors)
                 if not f_name.strip() or not l_name.strip() or not password.strip() or not qual.strip() or dob is None:
                     st.session_state.signup_general_error = "Please fill in all required fields."
-                
+
                 # If there are no errors, attempt to create the doctor
                 if not st.session_state.signup_email_error and \
                    not st.session_state.signup_contact_error and \
                    not st.session_state.signup_general_error: # All checks passed so far
-                    
+
                     success = self.db_manager.create_doctor(f_name, l_name, email, contact, password, qual, str(dob))
                     if success:
                         st.success("Account created! Please log in.")
@@ -116,7 +123,7 @@ class AuthenticationService:
                         st.rerun()
                     else:
                         st.session_state.signup_general_error = "Email already registered or another database error occurred."
-                
+
             # Display general error after the submit button if it exists
             if st.session_state.signup_general_error:
                 st.error(st.session_state.signup_general_error)
