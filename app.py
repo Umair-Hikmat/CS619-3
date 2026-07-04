@@ -73,6 +73,7 @@ def initialize_database():
 
 db_manager = initialize_database()
 db_manager.init_db()
+db_manager.insert_sample_data()
 
 # =========================================================
 # APPLICATION CLASS
