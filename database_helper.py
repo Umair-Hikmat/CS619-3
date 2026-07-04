@@ -550,9 +550,22 @@ class DatabaseManager:
                 )
     
                 patient_id = cursor.lastrowid
-    
+                gender_map = {
+                    "Ali Ahmed": 1,        # Male
+                    "Sara Khan": 0,        # Female
+                    "Bilal Hussain": 1,    # Male
+                    "Ayesha Malik": 0,     # Female
+                    "Usman Tariq": 1,      # Male
+                    "Fatima Noor": 0,      # Female
+                    "Hamza Iqbal": 1,      # Male
+                    "Hina Shah": 0,        # Female
+                    "Zain Ali": 1,         # Male
+                    "Maryam Aslam": 0      # Female
+                }
+
+                gender = gender_map[patient[0]]
                 # Fix 1: Establish a static gender and age per patient context
-                gender = random.randint(0, 1)
+                #gender = random.randint(0, 1)
                 age = patient[2]
     
                 # Every patient gets 1-3 visits
