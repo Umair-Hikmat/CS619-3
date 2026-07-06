@@ -171,7 +171,7 @@ class StreamlitApp:
         st.session_state.menu = menu_selection
 
     def _render_dashboard(self):
-        st.title("📈 Clinical Dashboard")
+        st.title("📈 Dashboard")
         patients_df = self.db_manager.get_patients(st.session_state.user_id)
         total_patients = len(patients_df) # Re-added this line
         all_probs = []
